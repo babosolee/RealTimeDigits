@@ -141,24 +141,25 @@ class MyVideoSurface : public QAbstractVideoSurface
 
         //memmove(newFrame, img.mirrored().bits(),img.byteCount());
 
-        currentFrame = QImage(newFrame.bits(),newFrame.width(),newFrame.height(),newFrame.bytesPerLine(),m_imageFormat);
+        currentFrame = QImage(newFrame.bits(),640,480,newFrame.bytesPerLine(),m_imageFormat);
         currentFrame=currentFrame.mirrored();
         //qDebug()<<currentFrame.size()<<" "<<newFrame.bits()<<" "<<newFrame.width()<<" "<<newFrame.height()<<
         //              " "<<newFrame.bytesPerLine()<<" "<<m_imageFormat;
         //QSize(1600, 1200)   0x7f44b0763010   1600   1200   6400   4
-        currentFrame.save("/tmp/picture.jpg");
-        string rsp="";
+
+
 
         #ifdef linux
-        currentFrame.save("/tmp/picture.jpeg");// /dev/shm/picture.jpg
+        currentFrame.save("/tmp/picture.bmp");// /dev/shm/picture.jpg
         #elif _WIN32
         //memmove(pRgb32Buffer, img.mirrored().bits(),img.byteCount());
-        currentFrame.save("c:/temp/picture.jpeg");
+        currentFrame.save("c:/temp/picture.bmp");
         #else
         std::cout<<"Unknown OS: Picture not saved";
         #endif
         QString command = uiPtr->lineEdit->text();
         //qDebug()<<command<<"\n";
+        string rsp="";
         rsp=ExecuteCommand(command.toStdString().c_str());
         //qDebug()<<rsp.c_str();
             //TO DO 2:
@@ -166,7 +167,7 @@ class MyVideoSurface : public QAbstractVideoSurface
 
             //TO DO 3;
 
-            //Get highest (prosentvalue,category) pair from std::list and draw the category name to currentFrame
+            //Get highest (prosentvalue,category) pair from std::list and draw the category name e.g "Frog" to currentFrame
 
         QImage qImageScaled = currentFrame.scaled(QSize(uiPtr->label->width(),uiPtr->label->height()),Qt::KeepAspectRatio,Qt::FastTransformation);
 
