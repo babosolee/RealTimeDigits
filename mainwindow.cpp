@@ -12,11 +12,21 @@
 #include <QCamera>
 #include <QCameraImageCapture>
 #include <QGraphicsVideoItem>
-#include <iostream>
-#include <stdio.h>
 #include <QAbstractVideoSurface>
 #include <QCameraViewfinderSettingsControl>
+#include <QMessageBox>
+#include <QTime>
+#include <iostream>
+#include <stdio.h>
+
+#ifdef _WIN32
+#include<Windows.h>
+#else
 #include <unistd.h>
+#endif
+
+Ui::MainWindow *uiPtr=NULL;
+
 using namespace std;
 
 string GetData(FILE* file)
@@ -30,56 +40,6 @@ string GetData(FILE* file)
     return result;
 
 }
-
-string ExecuteCommand(string command)
-{
-    FILE* file = popen(command.c_str(), "r");
-    string response=GetData(file);
-    pclose(file);
-    return response;
-}
-
-
-
-
-
-
-void messagebox(string title, string message)
-{
-
-    #ifdef linux
-        char command[4000]="";
-        sprintf(command,"notify-send '%s' '%s'",title.c_str(), message.c_str());
-        FILE* file= popen(command, "r");
-        pclose(file);
-    #else _WIN32
-        ::MessageBox( title.c_str(), string message.c_str(),MB_OK);
-    #endif
-}
-
-
-bool checkCameraAvailability()
-{
-    if (QCameraInfo::availableCameras().count() > 0)
-        return true;
-    else
-        return false;
-}
-
-QTimer qTimer;
-QCameraImageCapture *imageCapture=NULL;
-QCamera *camera=NULL;
-
-void CaptureImage(QString path=NULL)
-{
-    //on half pressed shutter button
-    camera->searchAndLock();
-    //on shutter button pressed
-    imageCapture->capture();
-    //on shutter button released
-    camera->unlock();
-}
-
 string DigitResponseMock()
 {
   string tmp="";
@@ -95,7 +55,66 @@ string DigitResponseMock()
   tmp+="Script took 0.272104024887 seconds.\n";
   return tmp;
 }
+void MakeSureDirectoryPathExists(string path)
+{
+    typedef BOOL (WINAPI * CreateDirFun ) (PCSTR DirPath );
+    HMODULE h = LoadLibraryA((PCSTR) "dbghelp.dll" );
+    CreateDirFun pFun = (CreateDirFun) GetProcAddress( h, "MakeSureDirectoryPathExists" );
+    (*pFun)((PCSTR) (path+"\\").c_str() );
+    FreeLibrary( h );
+}
+string ExecuteCommand(string command)
+{
+    string response="";
+    #ifdef linux
+        FILE* file = popen(command.c_str(), "r");
+        response=GetData(file);
+        pclose(file);
+        return response;
+    #else _WIN32
+        response=DigitResponseMock();//Digits not support windows yet
+        return response;
+    #endif
+}
 
+void messagebox(string title, string message)
+{
+    #ifdef linux
+    char command[4000]="";
+    sprintf(command,"notify-send '%s' '%s'",title.c_str(), message.c_str());
+    FILE* file= popen(command, "r");
+    pclose(file);
+    #else _WIN32
+    QMessageBox msgBox;
+    msgBox.setText(title.c_str());
+    msgBox.setInformativeText(message.c_str());
+    msgBox.exec();
+    #endif
+}
+
+
+bool checkCameraAvailability()
+{
+    if (QCameraInfo::availableCameras().count() > 0)
+        return true;
+    else
+        return false;
+}
+
+//QTimer qTimer;
+QCameraImageCapture *imageCapture=NULL;
+QCamera *camera=NULL;
+/*
+void CaptureImage(QString path=NULL)
+{
+    //on half pressed shutter button
+    camera->searchAndLock();
+    //on shutter button pressed
+    imageCapture->capture();
+    //on shutter button released
+    camera->unlock();
+}
+*/
 class MyVideoSurface : public QAbstractVideoSurface
 {
     QList<QVideoFrame::PixelFormat> supportedPixelFormats(
@@ -104,70 +123,101 @@ class MyVideoSurface : public QAbstractVideoSurface
         Q_UNUSED(handleType);
 
         // Return the formats you will support
-        return QList<QVideoFrame::PixelFormat>() << QVideoFrame::Format_BGR32;
+        return QList<QVideoFrame::PixelFormat>() << QVideoFrame::Format_RGB32;
     }
 
     QImage::Format m_imageFormat = QImage::Format_RGB32;
 
     QImage currentFrame;
+    QTime time;
 
     bool present(const QVideoFrame &frame)
     {
+        time.start();
         Q_UNUSED(frame);
         // Handle the frame and do your processing
         QVideoFrame newFrame(frame);
-        newFrame.map(QAbstractVideoBuffer::ReadOnly);
+        newFrame.map(QAbstractVideoBuffer::ReadWrite);
+
+        //memmove(newFrame, img.mirrored().bits(),img.byteCount());
+
         currentFrame = QImage(newFrame.bits(),newFrame.width(),newFrame.height(),newFrame.bytesPerLine(),m_imageFormat);
-        qDebug()<<currentFrame.size()<<" "<<newFrame.bits()<<" "<<newFrame.width()<<" "<<newFrame.height()<<
-                      " "<<newFrame.bytesPerLine()<<" "<<m_imageFormat;
+        currentFrame=currentFrame.mirrored();
+        //qDebug()<<currentFrame.size()<<" "<<newFrame.bits()<<" "<<newFrame.width()<<" "<<newFrame.height()<<
+        //              " "<<newFrame.bytesPerLine()<<" "<<m_imageFormat;
         //QSize(1600, 1200)   0x7f44b0763010   1600   1200   6400   4
         currentFrame.save("/tmp/picture.jpg");
         string rsp="";
-        #ifdef linux
-            //remove( "/tmp/picture.jpg" );
-            currentFrame.save("/tmp/picture.jpg");// /dev/shm/picture.jpg
-            //QString command = ui->?????->???->QLineEdit->toPlainText();// TO DO 1:
-            QString command="";
-            rsp=ExecuteCommand(command.toStdString().c_str());
-            qDebug()<<rsp.c_str();
 
+        #ifdef linux
+        currentFrame.save("/tmp/picture.jpeg");// /dev/shm/picture.jpg
+        #elif _WIN32
+        //memmove(pRgb32Buffer, img.mirrored().bits(),img.byteCount());
+        currentFrame.save("c:/temp/picture.jpeg");
+        #else
+        std::cout<<"Unknown OS: Picture not saved";
+        #endif
+        QString command = uiPtr->lineEdit->text();
+        //qDebug()<<command<<"\n";
+        rsp=ExecuteCommand(command.toStdString().c_str());
+        //qDebug()<<rsp.c_str();
             //TO DO 2:
-            //Parse prosentvalue1,Category1,prosentvalue1,Category1, ... pairs from the response string and add them to std::list
+            //Parse prosentvalue1,Category1,prosentvalue2,Category2, ... pairs from the response string and add them to std::list
 
             //TO DO 3;
 
-            //Get highest (prosentvalue,category) pair from std::list and draw the gategory name to currentFrame
+            //Get highest (prosentvalue,category) pair from std::list and draw the category name to currentFrame
 
-            //TO DO 4;
-            //write currentFrame to QFrame "dialog" box
-
+        QImage qImageScaled = currentFrame.scaled(QSize(uiPtr->label->width(),uiPtr->label->height()),Qt::KeepAspectRatio,Qt::FastTransformation);
 
 
-
-
-        #elif _WIN32
-           // remove( "c:/temp/picture.jpg" );
-            currentFrame.save("c:/temp/picture.jpg");
-            rsp=DigitResponseMock();//Digits not support windows yet
-            qDebug()<<rsp.c_str();
-
-        #else
-              std::cout<<"Unknown OS";
-        #endif
-
-
+        const QString text="Not categorised";
+        const QColor textColor=0xff0000;
+        QPainter painter(&qImageScaled);
+        int fontSize=20;
+        //painter.fillRect(0, 0, text_width, text_height, backgroundColor);
+        painter.setBrush(textColor);
+        painter.setPen(textColor);
+        painter.setFont(QFont("Sans", fontSize));
+        painter.drawText(5, 20, text);
+        uiPtr->label->setPixmap(QPixmap::fromImage(qImageScaled));
+        //uiPtr->label->resize(uiPtr->label->pixmap()->size());
 
         newFrame.unmap();
-
-        //qDebug()<<"Video frame unmapped";
-
-
-        //CaptureImage("/tmp/picture.jpg");
-
-
+        qDebug() << "Draw time:" << time.elapsed()<<"ms";
         return true;
     }
 }mySurface;
+
+/*
+    void imageLabel::paintEvent(QPaintEvent *event)
+    {
+        QLabel::paintEvent(event);
+        if (!m_qImage.isNull())
+        {
+            QImage qImageScaled = m_qImage.scaled(QSize(width(),height()),Qt::KeepAspectRatio,Qt::FastTransformation);
+        double dAspectRatio = (double)qImageScaled.width()/(double)m_qImage.width();
+        int iX = m_iX*dAspectRatio;
+        int iY = m_iY*dAspectRatio;
+        int iWidth = m_iWidth*dAspectRatio;
+        int iHeight = m_iHeight*dAspectRatio;
+
+        QPainter qPainter(this);
+        qPainter.drawImage(0,0,qImageScaled);
+        qPainter.setBrush(Qt::NoBrush);
+        qPainter.setPen(Qt::red);
+        qPainter.drawRect(iX,iY,iWidth,iHeight);
+        }
+    }
+    */
+
+
+
+
+
+
+
+
 
 
 
@@ -178,6 +228,10 @@ MainWindow::MainWindow(QWidget *parent) :
 {
 
     ui->setupUi(this);
+    uiPtr=ui;
+    #ifdef _WIN32
+    MakeSureDirectoryPathExists("c:\\temp");
+    #endif
     if(checkCameraAvailability()==true)
     {
 
@@ -186,7 +240,7 @@ MainWindow::MainWindow(QWidget *parent) :
         {
             //if (cameraInfo.deviceName()!=NULL)
             //{
-               std::cout<<"Camera name "<<cameraInfo.deviceName().toStdString();
+               std::cout<<"Camera name "<<cameraInfo.deviceName().toStdString()<<"\n";
             //}
         }
         camera = new QCamera();
@@ -196,33 +250,9 @@ MainWindow::MainWindow(QWidget *parent) :
         camera->start();
     }
 
-
-
-
-    //qTimer = new QTimer(this);
-    //qTimer->setInterval(25);//25 ms timer
-    //connect(qTimer, SIGNAL(timeout()), this, SLOT(displayFrame()));
-
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
 }
-
-
-
-
-
-
-/*
-void MainWindow::displayFrame()
-{
-    //capture a frame from the webcam
-   // frame = captureFrame(640, 360);
-   // image = getQImageFromFrame(frame);
-
-    //set the image of the label to be the captured frame and resize the label appropriately
-    //ui->label->setPixmap(QPixmap::fromImage(image));
-    //ui->label->resize(ui->label->pixmap()->size());
-}*/
