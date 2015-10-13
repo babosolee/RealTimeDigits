@@ -18,6 +18,8 @@
 #include <QTime>
 #include <iostream>
 #include <stdio.h>
+#include <sstream>
+
 
 #ifdef _WIN32
 #include<Windows.h>
@@ -28,6 +30,18 @@
 Ui::MainWindow *uiPtr=NULL;
 
 using namespace std;
+
+#include <stdio.h>
+#include <stdarg.h>
+
+void GetMatches ( const char * str, const char * format, ... )
+{
+  va_list args;
+  va_start (args, format);
+  vsscanf (str, format, args);
+  va_end (args);
+}
+
 
 string GetData(FILE* file)
 {
@@ -46,11 +60,11 @@ string DigitResponseMock()
   tmp+="Processed 1/1 images ...\n";
   tmp+="Classification took 0.00332999229431 seconds.\n";
   tmp+="------------------------ Prediction for /tmp/picture.jpeg ------------------------\n";
-  tmp+="94.1835% - \"frog\"\n";
-  tmp+=" 5.8165% - \"ship\"\n";
-  tmp+=" 0.0000% - \"automobile\"\n";
-  tmp+=" 0.0000% - \"bird\"\n";
-  tmp+=" 0.0000% - \"cat\"\n";
+  tmp+="91.0000% - \"frog\"\n";
+  tmp+="9.0000% - \"ship\"\n";
+  tmp+="0.0000% - \"automobile\"\n";
+  tmp+="0.0000% - \"bird\"\n";
+  tmp+="0.0000% - \"cat\"\n";
   tmp+="\n";
   tmp+="Script took 0.272104024887 seconds.\n";
   return tmp;
@@ -76,6 +90,9 @@ string ExecuteCommand(string command)
         return response;
     #endif
 }
+
+
+
 
 void messagebox(string title, string message)
 {
@@ -115,6 +132,74 @@ void CaptureImage(QString path=NULL)
     camera->unlock();
 }
 */
+
+struct data
+{
+   float value;
+   char category[100];
+};
+
+std::list<data> parse(string rsp)
+{
+    std::stringstream ss(rsp);
+    std::list<data> pairs;
+    string line="";
+
+    if (rsp.c_str() != NULL)
+    {
+        while(std::getline(ss,line,'\n'))
+        {
+
+           char cat[100]="";
+           char *ptr=strstr((char*)line.c_str()," - ");
+           if(ptr!=NULL)
+           {
+                  memset(cat,0,100);
+                  strcpy_s(cat,ptr+3);
+                  data obj;
+                  obj.value=atof(line.c_str());
+                  strcpy_s(obj.category,ptr+3);
+                  pairs.push_back(obj);
+
+           }
+
+        }
+    }
+    return pairs;
+}
+
+
+float cal_sum(std::list<data> &parsedata)
+{
+    float average=0.0;
+    std::list<data>::const_iterator it;
+    for (it = parsedata.begin(); it != parsedata.end(); ++it)
+    {
+        if (it !=parsedata.begin())
+        {
+
+            average+=(*it).value;
+
+        }
+    }
+    return average;
+}
+
+const char *getCategory(std::list<data> &parsedata)
+{
+   std::list<data>::const_iterator it=parsedata.begin();
+   return (*it).category;
+}
+
+float getValue(std::list<data> &parsedata)
+{
+   std::list<data>::const_iterator it=parsedata.begin();
+   return (*it).value;
+}
+
+
+
+
 class MyVideoSurface : public QAbstractVideoSurface
 {
     QList<QVideoFrame::PixelFormat> supportedPixelFormats(
@@ -161,18 +246,21 @@ class MyVideoSurface : public QAbstractVideoSurface
         //qDebug()<<command<<"\n";
         string rsp="";
         rsp=ExecuteCommand(command.toStdString().c_str());
-        //qDebug()<<rsp.c_str();
-            //TO DO 2:
-            //Parse prosentvalue1,Category1,prosentvalue2,Category2, ... pairs from the response string and add them to std::list
+        std::list<data> parsedata=parse(rsp);
 
-            //TO DO 3;
-
-            //Get highest (prosentvalue,category) pair from std::list and draw the category name e.g "Frog" to currentFrame
+        float avg=cal_sum(parsedata);
+        QString text="";
+        if (avg>=10)//rest of the categorised item average is over 40%
+        {
+            text="No categorised";
+        }
+        else
+        {
+            text=getCategory(parsedata);
+        }
 
         QImage qImageScaled = currentFrame.scaled(QSize(uiPtr->label->width(),uiPtr->label->height()),Qt::KeepAspectRatio,Qt::FastTransformation);
 
-
-        const QString text="Not categorised";
         const QColor textColor=0xff0000;
         QPainter painter(&qImageScaled);
         int fontSize=20;
@@ -189,39 +277,6 @@ class MyVideoSurface : public QAbstractVideoSurface
         return true;
     }
 }mySurface;
-
-/*
-    void imageLabel::paintEvent(QPaintEvent *event)
-    {
-        QLabel::paintEvent(event);
-        if (!m_qImage.isNull())
-        {
-            QImage qImageScaled = m_qImage.scaled(QSize(width(),height()),Qt::KeepAspectRatio,Qt::FastTransformation);
-        double dAspectRatio = (double)qImageScaled.width()/(double)m_qImage.width();
-        int iX = m_iX*dAspectRatio;
-        int iY = m_iY*dAspectRatio;
-        int iWidth = m_iWidth*dAspectRatio;
-        int iHeight = m_iHeight*dAspectRatio;
-
-        QPainter qPainter(this);
-        qPainter.drawImage(0,0,qImageScaled);
-        qPainter.setBrush(Qt::NoBrush);
-        qPainter.setPen(Qt::red);
-        qPainter.drawRect(iX,iY,iWidth,iHeight);
-        }
-    }
-    */
-
-
-
-
-
-
-
-
-
-
-
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
