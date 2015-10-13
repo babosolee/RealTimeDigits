@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>814</width>
-    <height>427</height>
+    <width>963</width>
+    <height>392</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,8 +19,8 @@
      <rect>
       <x>10</x>
       <y>10</y>
-      <width>791</width>
-      <height>351</height>
+      <width>941</width>
+      <height>321</height>
      </rect>
     </property>
     <property name="currentIndex">
@@ -35,8 +35,8 @@
        <rect>
         <x>10</x>
         <y>10</y>
-        <width>361</width>
-        <height>271</height>
+        <width>301</width>
+        <height>261</height>
        </rect>
       </property>
       <property name="text">
@@ -53,26 +53,91 @@
        <rect>
         <x>10</x>
         <y>10</y>
-        <width>761</width>
+        <width>941</width>
+        <height>131</height>
+       </rect>
+      </property>
+      <property name="title">
+       <string>Path to Digits script</string>
+      </property>
+      <widget class="QPlainTextEdit" name="plainTextEdit">
+       <property name="geometry">
+        <rect>
+         <x>0</x>
+         <y>20</y>
+         <width>901</width>
+         <height>78</height>
+        </rect>
+       </property>
+       <property name="plainText">
+        <string>cd ~/digits/examples/classification;export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH;/usr/bin/env PYTHONPATH=/home/digits/caffe/python ./use_archive.py</string>
+       </property>
+      </widget>
+      <widget class="QGroupBox" name="groupBox_2">
+       <property name="geometry">
+        <rect>
+         <x>0</x>
+         <y>100</y>
+         <width>941</width>
+         <height>71</height>
+        </rect>
+       </property>
+       <property name="title">
+        <string>Path to learning file</string>
+       </property>
+      </widget>
+     </widget>
+     <widget class="QGroupBox" name="groupBox_3">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>180</y>
+        <width>931</width>
         <height>61</height>
        </rect>
       </property>
       <property name="title">
-       <string>Path to digits script</string>
+       <string>Path to image file</string>
       </property>
-      <widget class="QLineEdit" name="lineEdit">
+      <widget class="QPlainTextEdit" name="plainTextEdit3">
        <property name="geometry">
         <rect>
-         <x>10</x>
-         <y>20</y>
-         <width>741</width>
-         <height>27</height>
+         <x>0</x>
+         <y>30</y>
+         <width>921</width>
+         <height>31</height>
         </rect>
        </property>
-       <property name="text">
-        <string>./use_archive.py ~/Downloads/20150824-062821-1bea_epoch_30.0.tar.gz /tmp/picture.bmp</string>
+       <property name="plainText">
+        <string>/tmp/picture.jpg</string>
        </property>
       </widget>
+     </widget>
+     <widget class="QPlainTextEdit" name="plainTextEdit2">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>140</y>
+        <width>921</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="plainText">
+       <string>~/Downloads/20150824-062821-1bea_epoch_30.0.tar.gz</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButton">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>250</y>
+        <width>191</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Update paths</string>
+      </property>
      </widget>
     </widget>
    </widget>
@@ -82,8 +147,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>814</width>
-     <height>21</height>
+     <width>963</width>
+     <height>25</height>
     </rect>
    </property>
   </widget>

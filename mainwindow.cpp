@@ -28,6 +28,9 @@
 #endif
 
 Ui::MainWindow *uiPtr=NULL;
+QString commandcom="";
+QString learningcom="";
+QString imagecom="";
 
 using namespace std;
 
@@ -69,45 +72,45 @@ string DigitResponseMock()
   tmp+="Script took 0.272104024887 seconds.\n";
   return tmp;
 }
-void MakeSureDirectoryPathExists(string path)
+string MakeSureDirectoryPathExists(string path)
 {
-    #ifdef linux
+    #ifdef _WIN32
     typedef BOOL (WINAPI * CreateDirFun ) (PCSTR DirPath );
     HMODULE h = LoadLibraryA((PCSTR) "dbghelp.dll" );
     CreateDirFun pFun = (CreateDirFun) GetProcAddress( h, "MakeSureDirectoryPathExists" );
     (*pFun)((PCSTR) (path+"\\").c_str() );
     FreeLibrary( h );
     #endif
+    return path;
 }
 string ExecuteCommand(string command)
 {
     string response="";
-    #ifdef linux
-        FILE* file = popen(command.c_str(), "r");
-        response=GetData(file);
-        pclose(file);
-        return response;
-    #else _WIN32
-        response=DigitResponseMock();//Digits not support windows yet
-        return response;
+    #ifdef _WIN32
+    response=DigitResponseMock();//Digits not support windows yet
+    return response;
+    #else
+    FILE* file = popen(command.c_str(), "r");
+    response=GetData(file);
+    pclose(file);
+    return response;
     #endif
+
 }
-
-
 
 
 void messagebox(string title, string message)
 {
-    #ifdef linux
-    char command[4000]="";
-    sprintf(command,"notify-send '%s' '%s'",title.c_str(), message.c_str());
-    FILE* file= popen(command, "r");
-    pclose(file);
-    #else _WIN32
+    #ifdef _WIN32
     QMessageBox msgBox;
     msgBox.setText(title.c_str());
     msgBox.setInformativeText(message.c_str());
     msgBox.exec();
+    #else
+    char command[4000]="";
+    sprintf(command,"notify-send '%s' '%s'",title.c_str(), message.c_str());
+    FILE* file= popen(command, "r");
+    pclose(file);
     #endif
 }
 
@@ -233,34 +236,43 @@ class MyVideoSurface : public QAbstractVideoSurface
         // Handle the frame and do your processing
         QVideoFrame newFrame(frame);
         newFrame.map(QAbstractVideoBuffer::ReadWrite);
-        currentFrame = QImage(newFrame.bits(),640,480,newFrame.bytesPerLine(),m_imageFormat);
-        currentFrame=currentFrame.mirrored();
+        currentFrame = QImage(newFrame.bits(),frame.width(),frame.height(),newFrame.bytesPerLine(),m_imageFormat);
+
         //qDebug()<<currentFrame.size()<<" "<<newFrame.bits()<<" "<<newFrame.width()<<" "<<newFrame.height()<<
         //              " "<<newFrame.bytesPerLine()<<" "<<m_imageFormat;
         //QSize(1600, 1200)   0x7f44b0763010   1600   1200   6400   4
 
-        #ifdef linux
-        currentFrame.save("/tmp/picture.bmp");// /dev/shm/picture.jpg
-        #elif _WIN32
-        currentFrame.save("c:/temp/picture.bmp");
+        #ifdef _WIN32
+        currentFrame=currentFrame.mirrored();
+        currentFrame.save("c:/temp/picture.jpg");
         #else
-        std::cout<<"Unknown OS: Picture not saved";
+        currentFrame.save("/tmp/picture.jpg");// /dev/shm/picture.jpg
         #endif
-        QString command = uiPtr->lineEdit->text();
+
+
+
         //qDebug()<<command<<"\n";
         string rsp="";
-        rsp=ExecuteCommand(command.toStdString().c_str());
+        QString command=commandcom+" "+learningcom+" "+imagecom;
+        qDebug()<<command.toStdString().c_str()<<"\n";
+        rsp=ExecuteCommand(command.toStdString());
+        qDebug()<<rsp.c_str()<<"\n";
         std::list<data> parsedata=parse(rsp);
 
-        float sum=cal_sum(parsedata);
+        //float sum=cal_sum(parsedata);
         QString text="";
-        if (sum>=10)
+
+
+        //qDebug() <<getValue(parsedata)<<"***************************************"<<sum<<"\n";
+        //if (sum < 10 && getValue(parsedata) > 99)
+        if (getValue(parsedata) > 99)
         {
-            text="Not categorised";
+            text=getCategory(parsedata);
+
         }
         else
         {
-            text=getCategory(parsedata);
+            text="Not categorised";
         }
 
         QImage qImageScaled = currentFrame.scaled(QSize(uiPtr->label->width(),uiPtr->label->height()),Qt::KeepAspectRatio,Qt::FastTransformation);
@@ -276,6 +288,15 @@ class MyVideoSurface : public QAbstractVideoSurface
     }
 }mySurface;
 
+void MainWindow::handleButton()
+{
+   cout<<"*******************************************";
+    commandcom = uiPtr->plainTextEdit->toPlainText();
+    learningcom = uiPtr->plainTextEdit2->toPlainText();
+    imagecom = uiPtr->plainTextEdit3->toPlainText();
+
+
+}
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -302,7 +323,11 @@ MainWindow::MainWindow(QWidget *parent) :
         camera->setCaptureMode(QCamera::CaptureStillImage);
         camera->setViewfinder(&mySurface);
         camera->start();
+        MainWindow::handleButton();
     }
+
+
+    connect(ui->pushButton, SIGNAL (clicked()), this, SLOT (handleButton()));
 
 }
 
