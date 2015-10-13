@@ -71,11 +71,13 @@ string DigitResponseMock()
 }
 void MakeSureDirectoryPathExists(string path)
 {
+    #ifdef linux
     typedef BOOL (WINAPI * CreateDirFun ) (PCSTR DirPath );
     HMODULE h = LoadLibraryA((PCSTR) "dbghelp.dll" );
     CreateDirFun pFun = (CreateDirFun) GetProcAddress( h, "MakeSureDirectoryPathExists" );
     (*pFun)((PCSTR) (path+"\\").c_str() );
     FreeLibrary( h );
+    #endif
 }
 string ExecuteCommand(string command)
 {
@@ -143,10 +145,18 @@ std::list<data> parse(string rsp)
            if(ptr!=NULL)
            {
                   memset(cat,0,100);
+                  #ifdef _WIN32
                   strcpy_s(cat,ptr+3);
+                  #else
+                  strcpy(cat,ptr+3);
+                  #endif
                   data obj;
                   obj.value=atof(line.c_str());
+                  #ifdef _WIN32
                   strcpy_s(obj.category,ptr+3);
+                  #else
+                  strcpy(obj.category,ptr+3);
+                  #endif
                   pairs.push_back(obj);
 
            }
