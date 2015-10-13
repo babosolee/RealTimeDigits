@@ -70,7 +70,7 @@
         </rect>
        </property>
        <property name="text">
-        <string>./use_archive.py ~/Downloads/20150824-062821-1bea_epoch_30.0.tar.gz /tmp/picture.jpeg</string>
+        <string>./use_archive.py ~/Downloads/20150824-062821-1bea_epoch_30.0.tar.gz /tmp/picture.bmp</string>
        </property>
       </widget>
      </widget>

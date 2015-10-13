@@ -118,20 +118,8 @@ bool checkCameraAvailability()
         return false;
 }
 
-//QTimer qTimer;
 QCameraImageCapture *imageCapture=NULL;
 QCamera *camera=NULL;
-/*
-void CaptureImage(QString path=NULL)
-{
-    //on half pressed shutter button
-    camera->searchAndLock();
-    //on shutter button pressed
-    imageCapture->capture();
-    //on shutter button released
-    camera->unlock();
-}
-*/
 
 struct data
 {
@@ -198,6 +186,18 @@ float getValue(std::list<data> &parsedata)
 }
 
 
+void DrawText(QImage &qImageScaled,QString &text)
+{
+    const QColor textColor=0xff0000;
+    QPainter painter(&qImageScaled);
+    int fontSize=20;
+    //painter.fillRect(0, 0, text_width, text_height, backgroundColor);
+    painter.setBrush(textColor);
+    painter.setPen(textColor);
+    painter.setFont(QFont("Sans", fontSize));
+    painter.drawText(5, 20, text);
+}
+
 
 
 class MyVideoSurface : public QAbstractVideoSurface
@@ -223,21 +223,15 @@ class MyVideoSurface : public QAbstractVideoSurface
         // Handle the frame and do your processing
         QVideoFrame newFrame(frame);
         newFrame.map(QAbstractVideoBuffer::ReadWrite);
-
-        //memmove(newFrame, img.mirrored().bits(),img.byteCount());
-
         currentFrame = QImage(newFrame.bits(),640,480,newFrame.bytesPerLine(),m_imageFormat);
         currentFrame=currentFrame.mirrored();
         //qDebug()<<currentFrame.size()<<" "<<newFrame.bits()<<" "<<newFrame.width()<<" "<<newFrame.height()<<
         //              " "<<newFrame.bytesPerLine()<<" "<<m_imageFormat;
         //QSize(1600, 1200)   0x7f44b0763010   1600   1200   6400   4
 
-
-
         #ifdef linux
         currentFrame.save("/tmp/picture.bmp");// /dev/shm/picture.jpg
         #elif _WIN32
-        //memmove(pRgb32Buffer, img.mirrored().bits(),img.byteCount());
         currentFrame.save("c:/temp/picture.bmp");
         #else
         std::cout<<"Unknown OS: Picture not saved";
@@ -248,11 +242,11 @@ class MyVideoSurface : public QAbstractVideoSurface
         rsp=ExecuteCommand(command.toStdString().c_str());
         std::list<data> parsedata=parse(rsp);
 
-        float avg=cal_sum(parsedata);
+        float sum=cal_sum(parsedata);
         QString text="";
-        if (avg>=10)//rest of the categorised item average is over 40%
+        if (sum>=10)
         {
-            text="No categorised";
+            text="Not categorised";
         }
         else
         {
@@ -261,14 +255,8 @@ class MyVideoSurface : public QAbstractVideoSurface
 
         QImage qImageScaled = currentFrame.scaled(QSize(uiPtr->label->width(),uiPtr->label->height()),Qt::KeepAspectRatio,Qt::FastTransformation);
 
-        const QColor textColor=0xff0000;
-        QPainter painter(&qImageScaled);
-        int fontSize=20;
-        //painter.fillRect(0, 0, text_width, text_height, backgroundColor);
-        painter.setBrush(textColor);
-        painter.setPen(textColor);
-        painter.setFont(QFont("Sans", fontSize));
-        painter.drawText(5, 20, text);
+        DrawText(qImageScaled,text);
+
         uiPtr->label->setPixmap(QPixmap::fromImage(qImageScaled));
         //uiPtr->label->resize(uiPtr->label->pixmap()->size());
 
