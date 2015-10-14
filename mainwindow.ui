@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>963</width>
-    <height>431</height>
+    <width>976</width>
+    <height>522</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,9 +18,9 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>0</y>
+      <y>10</y>
       <width>941</width>
-      <height>381</height>
+      <height>441</height>
      </rect>
     </property>
     <property name="currentIndex">
@@ -63,21 +63,21 @@
       <widget class="QPlainTextEdit" name="plainTextEdit">
        <property name="geometry">
         <rect>
-         <x>0</x>
+         <x>-10</x>
          <y>20</y>
          <width>921</width>
-         <height>31</height>
+         <height>61</height>
         </rect>
        </property>
        <property name="plainText">
-        <string>export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH;/usr/bin/env PYTHONPATH=/home/digits/caffe/python ./use_archive.py</string>
+        <string>cd ~/digits/examples/classification;export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH;/usr/bin/env PYTHONPATH=/home/digits/caffe/python ./use_archive.py</string>
        </property>
       </widget>
       <widget class="QGroupBox" name="groupBox_2">
        <property name="geometry">
         <rect>
          <x>0</x>
-         <y>60</y>
+         <y>90</y>
          <width>941</width>
          <height>71</height>
         </rect>
@@ -104,7 +104,7 @@
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>140</y>
+        <y>170</y>
         <width>931</width>
         <height>61</height>
        </rect>
@@ -130,7 +130,7 @@
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>290</y>
+        <y>340</y>
         <width>181</width>
         <height>51</height>
        </rect>
@@ -143,7 +143,7 @@
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>210</y>
+        <y>240</y>
         <width>921</width>
         <height>61</height>
        </rect>
@@ -155,7 +155,7 @@
        <property name="geometry">
         <rect>
          <x>0</x>
-         <y>20</y>
+         <y>30</y>
          <width>921</width>
          <height>31</height>
         </rect>
@@ -178,8 +178,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>963</width>
-     <height>21</height>
+     <width>976</width>
+     <height>25</height>
     </rect>
    </property>
   </widget>

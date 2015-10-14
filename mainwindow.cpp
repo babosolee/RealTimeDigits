@@ -91,6 +91,7 @@ string ExecuteCommand(string command)
     response=DigitResponseMock();//Digits not support windows yet
     return response;
     #else
+   qDebug() <<homecom.toStdString().c_str()<<"***";
     chdir(homecom.toStdString().c_str());
     FILE* file = popen(command.c_str(), "r");
     response=GetData(file);
