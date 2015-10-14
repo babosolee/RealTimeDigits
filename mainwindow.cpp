@@ -238,7 +238,7 @@ class MyVideoSurface : public QAbstractVideoSurface
         newFrame.map(QAbstractVideoBuffer::ReadWrite);
         currentFrame = QImage(newFrame.bits(),frame.width(),frame.height(),newFrame.bytesPerLine(),m_imageFormat);
 
-        //qDebug()<<currentFrame.size()<<" "<<newFrame.bits()<<" "<<newFrame.width()<<" "<<newFrame.height()<<
+        //qDebug()<<currentFrame.size()<<" "<<newFrame.bits()<<" "<<newFrame.width()<<" "<<newFrame.height();
         //              " "<<newFrame.bytesPerLine()<<" "<<m_imageFormat;
         //QSize(1600, 1200)   0x7f44b0763010   1600   1200   6400   4
 
@@ -265,7 +265,7 @@ class MyVideoSurface : public QAbstractVideoSurface
 
         //qDebug() <<getValue(parsedata)<<"***************************************"<<sum<<"\n";
         //if (sum < 10 && getValue(parsedata) > 99)
-        if (getValue(parsedata) > 99)
+        if (getValue(parsedata) > 99.0)
         {
             text=getCategory(parsedata);
 
@@ -294,8 +294,6 @@ void MainWindow::handleButton()
     commandcom = uiPtr->plainTextEdit->toPlainText();
     learningcom = uiPtr->plainTextEdit2->toPlainText();
     imagecom = uiPtr->plainTextEdit3->toPlainText();
-
-
 }
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -303,6 +301,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
 
     ui->setupUi(this);
+    ui->tabWidget->setCurrentIndex(0);
     uiPtr=ui;
     #ifdef _WIN32
     MakeSureDirectoryPathExists("c:\\temp");

@@ -140,6 +140,11 @@
       </property>
      </widget>
     </widget>
+    <widget class="QWidget" name="tab_2">
+     <attribute name="title">
+      <string>About</string>
+     </attribute>
+    </widget>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
@@ -148,7 +153,7 @@
      <x>0</x>
      <y>0</y>
      <width>963</width>
-     <height>25</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>
