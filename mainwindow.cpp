@@ -31,6 +31,7 @@ Ui::MainWindow *uiPtr=NULL;
 QString commandcom="";
 QString learningcom="";
 QString imagecom="";
+QString homecom="";
 
 using namespace std;
 
@@ -90,6 +91,7 @@ string ExecuteCommand(string command)
     response=DigitResponseMock();//Digits not support windows yet
     return response;
     #else
+    chdir(homecom.toStdString().c_str());
     FILE* file = popen(command.c_str(), "r");
     response=GetData(file);
     pclose(file);
@@ -294,6 +296,7 @@ void MainWindow::handleButton()
     commandcom = uiPtr->plainTextEdit->toPlainText();
     learningcom = uiPtr->plainTextEdit2->toPlainText();
     imagecom = uiPtr->plainTextEdit3->toPlainText();
+    homecom = uiPtr->plainTextEdit4->toPlainText();
 }
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
